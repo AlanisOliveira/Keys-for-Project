@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { eq } from "drizzle-orm";
+import { headers } from "next/headers";
 
 import { PublicProjectLinkCard } from "@/components/projects/PublicProjectLinkCard";
 import { ProjectActions } from "@/components/projects/ProjectActions";
@@ -15,12 +16,23 @@ interface ProjectPageProps {
 }
 
 export default async function ProjectOverviewPage({ params }: ProjectPageProps) {
+  const requestHeaders = headers();
+  const forwardedProto = requestHeaders.get("x-forwarded-proto");
+  const forwardedHost = requestHeaders.get("x-forwarded-host");
+  const host = requestHeaders.get("host");
+  const origin =
+    forwardedProto && forwardedHost
+      ? `${forwardedProto}://${forwardedHost}`
+      : host
+        ? `${process.env.NODE_ENV === "production" ? "https" : "http"}://${host}`
+        : process.env.NEXT_PUBLIC_APP_URL ?? "";
+
   const row = await db.query.projects.findFirst({
     where: eq(projects.id, params.id),
     columns: { id: true, name: true, client_name: true, description: true, color: true, created_by: true, created_at: true, updated_at: true },
   });
 
-  const publicUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? ""}/vault/${params.id}`;
+  const publicUrl = `${origin}/vault/${params.id}`;
 
   if (!row) {
     return (
