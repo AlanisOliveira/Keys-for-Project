@@ -1,0 +1,21 @@
+services:
+  vault:
+    image: ${APP_IMAGE:-ghcr.io/alanisoliveira/security-alanis:latest}
+    container_name: security_alanis_local
+    restart: unless-stopped
+    ports:
+      - "${PORT:-3210}:3000"
+    environment:
+      NODE_ENV: production
+      DB_PATH: ${DB_PATH:-/data/vault.db}
+      SESSION_SECRET: ${SESSION_SECRET}
+      ADMIN_CPF: ${ADMIN_CPF}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-http://localhost:3210}
+    volumes:
+      - ${DATA_PATH:-/DATA/AppData/security-alanis/db}:/data
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
