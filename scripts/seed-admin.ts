@@ -95,9 +95,16 @@ if (existing) {
   process.exit(0);
 }
 
-const passwordHash = await bcrypt.hash(ADMIN_PASSWORD, 12);
-const id = randomUUID();
+async function main() {
+  const passwordHash = await bcrypt.hash(ADMIN_PASSWORD!, 12);
+  const id = randomUUID();
 
-db.prepare("INSERT INTO profiles (id, cpf, password_hash, role) VALUES (?, ?, ?, 'admin')").run(id, cpf, passwordHash);
+  db.prepare("INSERT INTO profiles (id, cpf, password_hash, role) VALUES (?, ?, ?, 'admin')").run(id, cpf, passwordHash);
 
-console.log(`Admin created: CPF=${cpf}, ID=${id}`);
+  console.log(`Admin created: CPF=${cpf}, ID=${id}`);
+}
+
+main().catch((error) => {
+  console.error(error);
+  process.exit(1);
+});
